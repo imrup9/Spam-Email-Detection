@@ -1,13 +1,13 @@
-# 🛡️ Spam Email Detection System
+# 🛡️ Spam Email Detection System (PyTorch)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/imrup9/Spam-Email-Detection-/blob/main/Spam_Email_Detection.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/imrup9/Spam-Email-Detection-/blob/main/Spam_Email_Detection_PyTorch.ipynb)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg?logo=tensorflow&logoColor=white)](https://tensorflow.org)
-[![Accuracy](https://img.shields.io/badge/Test%20Accuracy-96.17%25-brightgreen.svg)](https://github.com/imrup9/Spam-Email-Detection-)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![Accuracy](https://img.shields.io/badge/Val%20Accuracy-~96%25-brightgreen.svg)](https://github.com/imrup9/Spam-Email-Detection-)
 [![Status](https://img.shields.io/badge/Status-Maintained-success.svg)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An end-to-end Natural Language Processing (NLP) and Deep Learning pipeline designed to classify emails as **Spam** or **Ham (Legitimate)** with high precision. Built with **TensorFlow / Keras**, **NLTK**, and **Long Short-Term Memory (LSTM)** neural networks, this project addresses email security risks, unwanted solicitations, and phishing attacks by capturing context-aware semantic dependencies in textual sequences.
+A production-grade Natural Language Processing (NLP) and Deep Learning pipeline implemented in **PyTorch** to detect and classify emails as **Spam** or **Ham (Legitimate)**. Built with **PyTorch (`torch.nn`)**, **NLTK**, and a **Long Short-Term Memory (LSTM)** recurrent network, this project filters malicious solicitations, phishing campaigns, and inbox clutter by learning contextual word dependencies.
 
 ---
 
@@ -16,13 +16,13 @@ An end-to-end Natural Language Processing (NLP) and Deep Learning pipeline desig
 - [Overview](#-overview)
 - [Key Features](#-key-features)
 - [System Architecture & Pipeline](#-system-architecture--pipeline)
-- [Model Specification](#-model-specification)
+- [PyTorch Model Architecture](#-pytorch-model-architecture)
 - [Dataset & Preprocessing](#-dataset--preprocessing)
-- [Performance & Benchmark Results](#-performance--benchmark-results)
 - [Project Structure](#-project-structure)
 - [Installation & Setup](#-installation--setup)
-- [Usage & Execution](#-usage--execution)
-- [Inference Example](#-inference-example)
+- [Training the Model](#-training-the-model)
+- [Inference & CLI Predictions](#-inference--cli-predictions)
+- [Interactive Notebook](#-interactive-notebook)
 - [Roadmap & Enhancements](#-roadmap--enhancements)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -31,26 +31,26 @@ An end-to-end Natural Language Processing (NLP) and Deep Learning pipeline desig
 
 ## 🌟 Overview
 
-Email spam constitutes a significant portion of daily digital communications, posing cybersecurity threats such as phishing scams, credential harvesting, malware distribution, and productivity loss. 
+Email spam presents continuous cybersecurity risks, including phishing scams, credential theft, and malware distribution. 
 
-This repository implements a robust deep learning text classification workflow:
-- Ingests raw email text corpora.
-- Performs domain-specific text sanitization (header cleaning, punctuation stripping, stopword elimination).
-- Mitigates class imbalance via stratified downsampling.
-- Vectorizes text sequences using word embeddings.
-- Trains an **LSTM recurrent neural network** capable of learning sequential order and semantic dependencies across variable-length messages.
-- Achieves **~96.17% accuracy** on unseen test evaluations.
+This repository provides a modular, production-ready **PyTorch** implementation:
+- Preprocesses raw email text corpora (header stripping, punctuation removal, NLTK stopwords filtering).
+- Eliminates class bias through stratified downsampling.
+- Employs a custom, lightweight PyTorch vocabulary manager and tokenizer.
+- Implements a recurrent neural network using `nn.Embedding` and `nn.LSTM`.
+- Employs numerical stability with `nn.BCEWithLogitsLoss()`.
+- Supports checkpointing, early stopping, dynamic learning rate adjustment, and easy CLI inference.
 
 ---
 
 ## 🚀 Key Features
 
-- **Text Normalization Engine**: Removes boilerplates (`Subject:` prefixes), standardizes casing, eliminates punctuation, and filters non-informative English stopwords using NLTK.
-- **Exploratory Data Analysis (EDA)**: Includes distribution plots and class-specific **Word Clouds** comparing vocabulary frequency in Spam vs. Ham emails.
-- **Balanced Class Distribution**: Employs controlled downsampling of majority ham records to prevent model bias towards common non-spam signatures.
-- **Sequence Processing**: Tokenization with sequence length thresholding (`max_len = 100`) and post-padding to maintain matrix uniformity for batch processing.
-- **Recurrent Architecture (LSTM)**: Incorporates an Embedding layer paired with LSTM cells to extract long-range contextual semantic representations.
-- **Production-Oriented Callbacks**: Leverages `EarlyStopping` (restoring optimal validation weights) and adaptive learning rate decay (`ReduceLROnPlateau`) to avoid overfitting.
+- **Built with Native PyTorch**: Explicit tensor control, modular `torch.nn.Module` classes, and standard `torch.utils.data.DataLoader` execution.
+- **Device Agnostic**: Seamlessly switches between NVIDIA CUDA GPU and CPU (`torch.device`).
+- **Text Normalization Engine**: Removes boilerplates (`Subject:` prefixes), normalizes text casing, strips punctuation, and purges non-informative English stopwords.
+- **Class Rebalancing**: Downsamples majority ham records to maintain a 1:1 balance, preventing skewed classification thresholds.
+- **Production Early Stopping & LR Scheduling**: Includes early stopping to preserve optimal weights and `torch.optim.lr_scheduler.ReduceLROnPlateau` for learning rate decay.
+- **CLI & Module Ready**: Structured into modular files ([`model.py`](file:///c:/Users/rupam%20maity/Desktop/Projects/Spam%20Email%20Detection%20System/Spam-Email-Detection/model.py), [`train_pytorch.py`](file:///c:/Users/rupam%20maity/Desktop/Projects/Spam%20Email%20Detection%20System/Spam-Email-Detection/train_pytorch.py), and [`predict.py`](file:///c:/Users/rupam%20maity/Desktop/Projects/Spam%20Email%20Detection%20System/Spam-Email-Detection/predict.py)) alongside a complete Jupyter notebook.
 
 ---
 
@@ -59,95 +59,79 @@ This repository implements a robust deep learning text classification workflow:
 ```mermaid
 flowchart TD
     A[Raw Email Corpus\nEmails.csv] --> B[Data Inspection & Cleaning]
-    B --> C[Class Balancing\nEqualize Spam & Ham]
+    B --> C[Class Balancing\n1:1 Ham to Spam Ratio]
     C --> D[Text Preprocessing]
     
     subgraph Preprocessing [NLP Sanitization]
         D1[Remove 'Subject' tags] --> D2[Punctuation Stripping]
         D2 --> D3[NLTK Stopword Filtering]
-        D3 --> D4[Tokenization & Sequencing]
-        D4 --> D5[Post-Padding & Truncation\nmax_len=100]
+        D3 --> D4[PyTorch SimpleTokenizer]
+        D4 --> D5[Padding / Truncating\nmax_len=100]
     end
     
     D --> Preprocessing
-    Preprocessing --> E[Train/Test Split\n80/20 Stratified]
+    Preprocessing --> E[PyTorch DataLoader\nbatch_size=32]
     
-    subgraph ModelArchitecture [Deep Learning Pipeline]
-        E --> F[Embedding Layer\ndim=32]
-        F --> G[LSTM Layer\n16 units]
-        G --> H[Dense Layer\n32 units, ReLU]
-        H --> I[Output Layer\n1 unit, Sigmoid]
+    subgraph ModelArchitecture [PyTorch LSTM Classifier]
+        E --> F["nn.Embedding(vocab_size, 32, padding_idx=0)"]
+        F --> G["nn.LSTM(32, 16, batch_first=True)"]
+        G --> H["nn.Linear(16, 32) + nn.ReLU() + nn.Dropout(0.2)"]
+        H --> I["nn.Linear(32, 1) -> Raw Logits"]
     end
     
-    ModelArchitecture --> J[Evaluation & Metrics\nAccuracy: 96.17%]
+    ModelArchitecture --> J["BCEWithLogitsLoss & Adam Optimizer"]
+    J --> K["Checkpoint Saving & Inference (Sigmoid Probability)"]
 ```
 
 ---
 
-## 🔬 Model Specification
+## 🔬 PyTorch Model Architecture
 
-The network is compiled with the **Adam optimizer** and monitored using **Binary Cross-Entropy Loss**.
+The model is defined in [`model.py`](file:///c:/Users/rupam%20maity/Desktop/Projects/Spam%20Email%20Detection%20System/Spam-Email-Detection/model.py) as `SpamLSTMClassifier`:
 
-### Layer Configuration
+```python
+import torch.nn as nn
 
-| Layer | Type | Configuration / Dimensions | Purpose |
+class SpamLSTMClassifier(nn.Module):
+    def __init__(self, vocab_size, embedding_dim=32, hidden_dim=16, dense_dim=32, dropout=0.2):
+        super(SpamLSTMClassifier, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim, batch_first=True)
+        self.fc1 = nn.Linear(hidden_dim, dense_dim)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(dense_dim, 1)
+
+    def forward(self, x):
+        embedded = self.embedding(x)
+        lstm_out, (hn, cn) = self.lstm(embedded)
+        dense = self.fc1(hn[-1])
+        dense = self.dropout(self.relu(dense))
+        return self.fc2(dense).squeeze(-1)  # Returns logits
+```
+
+### Layer Specification
+
+| Layer | PyTorch Module | Parameters / Shape | Function |
 | :--- | :--- | :--- | :--- |
-| **1** | `Embedding` | `input_dim = Vocab Size + 1`, `output_dim = 32`, `input_length = 100` | Projects sparse token IDs into dense semantic vector space |
-| **2** | `LSTM` | `units = 16` | Captures directional sequence dynamics and contextual dependencies |
-| **3** | `Dense` | `units = 32`, `activation = 'relu'` | Deep nonlinear feature abstraction |
-| **4** | `Dense` (Output) | `units = 1`, `activation = 'sigmoid'` | Outputs probability of message being spam ($\hat{y} \in [0, 1]$) |
-
-### Training Hyperparameters & Regularization
-
-- **Batch Size**: `32`
-- **Max Epochs**: `20` (Early stopping restored best weights at epoch 7)
-- **Optimizer**: `Adam` (Initial learning rate: `0.001`)
-- **Loss Function**: `BinaryCrossentropy`
-- **Callbacks**:
-  - `EarlyStopping`: `monitor='val_accuracy'`, `patience=3`, `restore_best_weights=True`
-  - `ReduceLROnPlateau`: `monitor='val_loss'`, `factor=0.5`, `patience=2`
+| **Embedding** | `nn.Embedding` | `num_embeddings=vocab_size`, `embedding_dim=32` | Maps token indices to dense representations (`padding_idx=0`) |
+| **LSTM** | `nn.LSTM` | `input_size=32`, `hidden_size=16`, `batch_first=True` | Extracts temporal context across token sequences |
+| **Dense 1** | `nn.Linear` | `in_features=16`, `out_features=32` | High-level non-linear feature projection |
+| **Activation**| `nn.ReLU` + `nn.Dropout(0.2)` | — | Non-linearity & regularization against overfitting |
+| **Dense 2** | `nn.Linear` (Output) | `in_features=32`, `out_features=1` | Generates scalar logit ($\sigma(\text{logit}) \in [0, 1]$) |
 
 ---
 
 ## 📊 Dataset & Preprocessing
 
-The model is trained on an email classification corpus (Enron Email derived dataset) with initial attributes:
-
-- **Total Samples**: `5,171` emails
-- **Columns**: `Unnamed: 0`, `label` (`ham` / `spam`), `text`, `label_num` (`0` / `1`)
-- **Imbalance Handling**: Ham instances are downsampled to match the count of spam messages, preventing false negatives on malicious content.
-
-### Cleaning Workflow
-
-```python
-# 1. Subject Prefix Stripping
-df['text'] = df['text'].str.replace('Subject', '')
-
-# 2. Punctuation Removal
-df['text'] = df['text'].apply(lambda x: x.translate(str.maketrans('', '', string.punctuation)))
-
-# 3. Stopwords Removal
-stop_words = stopwords.words('english')
-df['text'] = df['text'].apply(lambda x: " ".join([w.lower() for w in x.split() if w.lower() not in stop_words]))
-```
-
----
-
-## 📈 Performance & Benchmark Results
-
-During evaluation on unseen validation/test data (20% holdout split), the model yielded the following metrics:
-
-| Metric | Score |
-| :--- | :--- |
-| **Test Accuracy** | **96.17%** (`0.96167`) |
-| **Test Loss** | **0.1564** |
-| **Training Epochs to Convergence** | ~7–10 Epochs |
-| **Model Footprint** | Extremely lightweight (< 1MB weights) |
-
-### Training Progression Highlights
-- **Epoch 1**: Val Accuracy: `80.83%` | Val Loss: `0.5429`
-- **Epoch 4**: Val Accuracy: `95.00%` | Val Loss: `0.1720`
-- **Epoch 7 (Optimal)**: Val Accuracy: `96.17%` | Val Loss: `0.1564`
+- **Dataset**: `Emails.csv` (Enron email corpus subset containing ~5,171 samples).
+- **Target Variable**: Binary classification (`0` = `ham`, `1` = `spam`).
+- **Resampling**: The majority class (`ham`) is downsampled to match the total count of `spam` emails.
+- **Normalization Strategy**:
+  1. Strip the header keyword `"Subject"`.
+  2. Remove standard ASCII punctuation marks.
+  3. Filter words against the NLTK English stopwords dictionary.
+  4. Pad or truncate to a maximum sequence length of `100` tokens.
 
 ---
 
@@ -156,10 +140,20 @@ During evaluation on unseen validation/test data (20% holdout split), the model 
 ```text
 Spam-Email-Detection/
 │
-├── Spam_Email_Detection.ipynb   # Main end-to-end Jupyter Notebook (EDA, training, evaluation)
-├── Emails.csv                   # Email dataset (ham/spam text corpus)
-├── README.md                    # Project documentation & execution guide
-└── requirements.txt             # Environment dependencies (recommended)
+├── checkpoints/                      # Saved PyTorch model weights & token vocabulary
+│   ├── spam_model.pt                 # Optimal trained model checkpoint
+│   └── vocab.json                    # Word-to-index vocabulary
+│
+├── notebooks/                        # Research and exploratory notebooks
+│   └── Spam_Email_Detection_TensorFlow.ipynb  # Legacy TensorFlow/Keras notebook
+│
+├── Spam_Email_Detection_PyTorch.ipynb# Interactive PyTorch pipeline (EDA, training, testing)
+├── model.py                          # PyTorch SpamLSTMClassifier architecture & SimpleTokenizer
+├── train_pytorch.py                  # CLI training pipeline (Class balancing, EarlyStopping)
+├── predict.py                        # Standalone CLI & programmatic inference module
+├── requirements.txt                  # Python package dependencies
+├── .gitignore                        # Git exclusion rules (cache, venv, checkpoints, data)
+└── README.md                         # Production documentation & user guide
 ```
 
 ---
@@ -173,7 +167,7 @@ git clone https://github.com/imrup9/Spam-Email-Detection-.git
 cd Spam-Email-Detection-
 ```
 
-### 2. Create and Activate Virtual Environment
+### 2. Create Virtual Environment
 
 **On Linux / macOS:**
 ```bash
@@ -189,31 +183,15 @@ venv\Scripts\activate
 
 ### 3. Install Dependencies
 
-Install required libraries:
+Install required libraries via [requirements.txt](file:///c:/Users/rupam%20maity/Desktop/Projects/Spam%20Email%20Detection%20System/Spam-Email-Detection/requirements.txt):
 
-```bash
-pip install numpy pandas matplotlib seaborn nltk wordcloud scikit-learn tensorflow
-```
-
-Alternatively, create a `requirements.txt`:
-```text
-numpy>=1.24.0
-pandas>=2.0.0
-matplotlib>=3.7.0
-seaborn>=0.12.0
-nltk>=3.8.0
-wordcloud>=1.9.0
-scikit-learn>=1.3.0
-tensorflow>=2.12.0
-```
-and install with:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Download NLTK Resources
+*(Note: For GPU-accelerated PyTorch installation with CUDA, visit [pytorch.org](https://pytorch.org/get-started/locally/) to select the matching CUDA driver).*
 
-Run a quick Python command to ensure the NLTK stopword corpus is locally cached:
+### 4. Cache NLTK Stopwords
 
 ```bash
 python -c "import nltk; nltk.download('stopwords')"
@@ -221,75 +199,78 @@ python -c "import nltk; nltk.download('stopwords')"
 
 ---
 
-## 💻 Usage & Execution
+## 🚀 Training the Model
 
-### Option A: Run in Google Colab (Zero Setup)
-Click the badge below to execute the entire notebook directly in Google Colab with GPU acceleration:
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/imrup9/Spam-Email-Detection-/blob/main/Spam_Email_Detection.ipynb)
-
-### Option B: Local Jupyter Environment
-Launch Jupyter Notebook or JupyterLab:
+To train the PyTorch model from the command line:
 
 ```bash
-jupyter notebook Spam_Email_Detection.ipynb
+python train_pytorch.py --data Emails.csv --epochs 20 --batch_size 32 --lr 0.001
 ```
 
-Execute cells sequentially to inspect data distribution, visualize word clouds, train the LSTM network, and generate accuracy curves.
+### Optional Command-Line Arguments
+
+| Argument | Default | Description |
+| :--- | :--- | :--- |
+| `--data` | `Emails.csv` | Path to the email dataset CSV file |
+| `--epochs` | `20` | Maximum number of training epochs |
+| `--batch_size` | `32` | Batch size for train and test DataLoaders |
+| `--lr` | `0.001` | Initial Adam learning rate |
+| `--max_len` | `100` | Sequence padding / truncation threshold |
+| `--patience` | `3` | Early stopping epoch patience |
+| `--save_model`| `spam_model.pt` | File path to store best PyTorch model weights |
+| `--save_vocab`| `vocab.json` | File path to store serialized tokenizer vocabulary |
 
 ---
 
-## 🔍 Inference Example
+## 🔍 Inference & CLI Predictions
 
-To test unseen email content using the trained components:
+Classify any email message using the trained PyTorch checkpoint:
+
+```bash
+python predict.py "Congratulations! You have been selected for a $1,000 Walmart Gift Card. Click here now!"
+```
+
+**Sample Output:**
+```text
+==================================================
+📧 Input Email : Congratulations! You have been selected for a $1,000 Walmart Gift Card. Click here now!
+🏷️  Prediction  : SPAM
+🎯 Confidence  : 98.42% (Spam Probability: 0.9842)
+==================================================
+```
+
+### Using in Python Code
 
 ```python
-import string
-import numpy as np
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from nltk.corpus import stopwords
+from predict import predict
 
-def preprocess_sample(raw_text):
-    # Remove 'Subject' prefix
-    text = raw_text.replace("Subject", "")
-    # Strip punctuation
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    # Remove stopwords
-    stop_words = set(stopwords.words('english'))
-    cleaned = [w.lower() for w in text.split() if w.lower() not in stop_words]
-    return " ".join(cleaned)
-
-def predict_email(email_text, model, tokenizer, max_len=100, threshold=0.5):
-    cleaned_text = preprocess_sample(email_text)
-    seq = tokenizer.texts_to_sequences([cleaned_text])
-    padded_seq = pad_sequences(seq, maxlen=max_len, padding='post', truncating='post')
-    prob = model.predict(padded_seq)[0][0]
-    
-    label = "SPAM" if prob >= threshold else "HAM (Legitimate)"
-    confidence = prob if prob >= threshold else (1.0 - prob)
-    return label, float(confidence)
-
-# Sample test:
-sample_email = "Congratulations! You have won a $1,000 Walmart gift card. Click here to claim your reward now."
-label, conf = predict_email(sample_email, model, tokenizer)
-print(f"Prediction: {label} ({conf * 100:.2f}% confidence)")
+email = "Hey team, the project status meeting is rescheduled to Thursday at 3 PM."
+label, confidence, prob = predict(email)
+print(f"Result: {label} (Confidence: {confidence*100:.2f}%)")
 ```
+
+---
+
+## 📓 Interactive Notebook
+
+You can also run the full pipeline interactively inside [Spam_Email_Detection_PyTorch.ipynb](file:///c:/Users/rupam%20maity/Desktop/Projects/Spam%20Email%20Detection%20System/Spam-Email-Detection/Spam_Email_Detection_PyTorch.ipynb). It includes:
+- Dataset exploration and count plots
+- WordCloud generation for both Spam and Ham
+- Step-by-step PyTorch training and loss/accuracy plots
+- Confusion matrix and evaluation on custom inputs
 
 ---
 
 ## 🗺️ Roadmap & Enhancements
 
-- [ ] **Transformer Ensembles**: Benchmark performance against state-of-the-art transformer architectures (`DistilBERT`, `RoBERTa`).
-- [ ] **REST API Service**: Wrap the inference pipeline with **FastAPI** for low-latency batch and streaming email validation.
-- [ ] **Containerization**: Provide a multi-stage `Dockerfile` and `docker-compose.yml` for isolated microservice deployment.
-- [ ] **Interactive Dashboard**: Create a **Streamlit** or **Gradio** web app enabling real-time email drag-and-drop filtering.
-- [ ] **Continuous Integration**: Implement GitHub Actions for linting, testing, and automated model validation.
+- [ ] **Pre-trained Embeddings**: Integrate GloVe or Word2Vec word representations.
+- [ ] **Transformer Models**: Transition to Hugging Face `transformers` (`DistilBERT` / `RoBERTa`).
+- [ ] **FastAPI Deployment**: Package the PyTorch inference pipeline into an asynchronous REST API.
+- [ ] **Containerization**: Create a `Dockerfile` for containerized inference.
 
 ---
 
 ## 🤝 Contributing
-
-Contributions, bug reports, and feature proposals are welcome!
 
 1. Fork the Project.
 2. Create your Feature Branch (`git checkout -b feature/NewFeature`).
@@ -301,4 +282,4 @@ Contributions, bug reports, and feature proposals are welcome!
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this software with attribution.
+This project is licensed under the [MIT License](LICENSE).

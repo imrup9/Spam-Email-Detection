@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter Notebook Checkpoints & Cache
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# PyTorch / Deep Learning Model Checkpoints
+*.pt
+*.pth
+*.bin
+checkpoints/*.pt
+
+# Keep directory structure
+!checkpoints/.gitkeep
+!data/.gitkeep
+
+# Datasets (large files)
+*.csv
+*.tsv
+
+# IDE / Editor Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+desktop.ini
